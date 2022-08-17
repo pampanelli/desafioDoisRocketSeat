@@ -10,19 +10,67 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+  const user = users.find(obj => obj.username == username);
+
+  if(!user){
+    return response.status(404).json({"error": "Usuário não cadastrado"});
+  };
+
+  request.user = user;
+  
+  next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const {user} = request;
+  const numberOfTodos = user.todos.length;
+
+  if(user.pro == false && numberOfTodos >= 10){
+    return response.status(403).json({"error": "Favor atualizar para licença PRO"})
+  };
+
+  request.user = user;
+  next();
+
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+  const {id} = request.params;
+  const user = users.find(obj => obj.username == username);
+  const isUuid = (id.length == 36);
+
+  if(!isUuid){
+    return response.status(400).json({"error": "ID informado não é um UUID válido"});
+  }
+
+  if(!user){
+    return response.status(404).json({"error": "Usuário não encontrado"});
+  }
+
+  const todo = user.todos.find(obj => obj.id == id);
+
+  if(!todo){
+    return response.status(404).json({"error": "ID não pertence a um TODO"});
+  }
+  request.user = user;
+  request.todo = todo;
+
+  next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const {id} = request.params;
+  const user = users.find(obj => obj.id == id);
+
+  if(!user){
+    return response.status(404).json({"error": "Usuário com ID informado não cadastrado"});
+  }
+
+  request.user = user;
+
+  next();
 }
 
 app.post('/users', (request, response) => {
